@@ -31,6 +31,8 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 const FilipinoFNDDemo = () => {
 	const [selectedModels, setSelectedModels] = useState([]);
 	const [inputText, setInputText] = useState("");
@@ -96,29 +98,48 @@ const FilipinoFNDDemo = () => {
 		setSelectedModels((prev) => prev.filter((id) => id !== modelId));
 	};
 
-	const handleClassify = () => {
+	const handleClassify = async () => {
 		if (selectedModels.length === 0 || !inputText.trim()) return;
 
 		setIsClassifying(true);
+		setResults(null);
 
-		setTimeout(() => {
-			const mockResults = selectedModels.map((modelId) => {
-				const model = models.find((m) => m.id === modelId);
-				const isFake = Math.random() > 0.5;
-				const confidence = 0.5 + Math.random() * 0.5;
-
-				return {
-					modelId,
-					model,
-					prediction: isFake ? "FAKE" : "REAL",
-					confidence: (confidence * 100).toFixed(1),
-					confidenceRaw: confidence,
-				};
+		try {
+			const response = await fetch(`${API_BASE}/classify`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					text: inputText.trim(),
+					model_ids: selectedModels,
+				}),
 			});
 
-			setResults(mockResults);
+			if (!response.ok) {
+				throw new Error(`Server error: ${response.status}`);
+			}
+
+			const data = await response.json();
+
+			// Transform the flat backend response to match the UI’s expected shape
+			if (data.results) {
+				const enriched = data.results.map((r) => ({
+					...r,
+					model: {
+						architecture: r.architecture,
+						condition: r.condition,
+						ratio: r.ratio,
+						accuracy: r.accuracy,
+						f1Score: r.f1Score,
+					},
+				}));
+				setResults(enriched);
+			}
+		} catch (error) {
+			console.error("Classification failed:", error);
+			// Optional: show alert
+		} finally {
 			setIsClassifying(false);
-		}, 1500);
+		}
 	};
 
 	const handleLoadSample = (type) => {
