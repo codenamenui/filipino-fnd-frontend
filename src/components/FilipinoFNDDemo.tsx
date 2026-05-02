@@ -414,16 +414,16 @@ const FilipinoFNDDemo = () => {
 										<p className="text-sm font-medium text-gray-700 mb-3">
 											Add Model to Selection
 										</p>
-										<div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+										<div className="flex flex-col gap-3">
 											<Select
 												value={selectedArchitecture}
 												onValueChange={
 													setSelectedArchitecture
 												}>
-												<SelectTrigger>
+												<SelectTrigger className="w-full">
 													<SelectValue placeholder="Select Architecture" />
 												</SelectTrigger>
-												<SelectContent>
+												<SelectContent position="popper" side="bottom" avoidCollisions={false}>
 													{architectures.map(
 														(arch) => (
 															<SelectItem
@@ -441,10 +441,10 @@ const FilipinoFNDDemo = () => {
 												onValueChange={
 													setSelectedCondition
 												}>
-												<SelectTrigger>
+												<SelectTrigger className="w-full">
 													<SelectValue placeholder="Select Condition" />
 												</SelectTrigger>
-												<SelectContent>
+												<SelectContent position="popper" side="bottom" avoidCollisions={false}>
 													{conditions.map((cond) => (
 														<SelectItem
 															key={cond.id}
@@ -460,10 +460,10 @@ const FilipinoFNDDemo = () => {
 												onValueChange={
 													setSelectedRatio
 												}>
-												<SelectTrigger>
+												<SelectTrigger className="w-full">
 													<SelectValue placeholder="Select Ratio" />
 												</SelectTrigger>
-												<SelectContent>
+												<SelectContent position="popper" side="bottom" avoidCollisions={false}>
 													{ratios.map((ratio) => (
 														<SelectItem
 															key={ratio}
