@@ -16,7 +16,7 @@ const ratioLabels = ["100:0", "67:33", "50:50", "33:67", "0:100"];
 
 const subclassData = {
 	A: {
-		label: "Condition A — Human-Only Real News (100% HR)",
+		label: "Condition A:Human-Only Real News (100% HR)",
 		bert: {
 			HR:  [94.31, 99.19, 99.18, 98.77, 98.77],
 			AIR: [75.31, 69.55, 76.34, 76.95, 80.25],
@@ -31,7 +31,7 @@ const subclassData = {
 		},
 	},
 	B: {
-		label: "Condition B — Moderate AI-Augmented (67% HR, 33% AI-R)",
+		label: "Condition B: Moderate AI-Augmented (67% HR, 33% AI-R)",
 		bert: {
 			HR:  [92.68, 98.78, 97.56, 98.78, 99.59],
 			AIR: [82.72, 91.77, 86.42, 93.00, 94.24],
@@ -46,7 +46,7 @@ const subclassData = {
 		},
 	},
 	C: {
-		label: "Condition C — Balanced AI-Augmented (50% HR, 50% AI-R)",
+		label: "Condition C: Balanced AI-Augmented (50% HR, 50% AI-R)",
 		bert: {
 			HR:  [93.09, 98.78, 97.56,100.00,100.00],
 			AIR: [90.53, 93.00, 87.65, 94.65, 99.18],
@@ -296,7 +296,7 @@ export default function SubclassChart() {
 
 					<div>
 						<p className="text-sm font-medium text-gray-700 mb-1">
-							Heatmap — detailed breakdown
+							Heatmap
 						</p>
 						<HeatmapTable condKey={activeTab} />
 					</div>

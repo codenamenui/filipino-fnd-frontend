@@ -28,17 +28,17 @@ const conditionPrefix: Record<string, string> = {
 
 const performanceData = {
 	A: {
-		label: "Condition A — Human-Only Real News (100% HR)",
+		label: "Condition A: Human-Only Real News (100% HR)",
 		bert:  [72.10, 83.18, 84.62, 85.44, 74.97],
 		distil:[75.28, 77.95, 79.64, 84.31, 76.82],
 	},
 	B: {
-		label: "Condition B — Moderate AI-Augmented (67% HR, 33% AI-R)",
+		label: "Condition B: Moderate AI-Augmented (67% HR, 33% AI-R)",
 		bert:  [73.33, 91.18, 90.67, 92.62, 69.64],
 		distil:[73.64, 87.90, 89.33, 89.54, 64.92],
 	},
 	C: {
-		label: "Condition C — Balanced AI-Augmented (50% HR, 50% AI-R)",
+		label: "Condition C: Balanced AI-Augmented (50% HR, 50% AI-R)",
 		bert:  [74.36, 88.62, 90.56, 91.79, 65.54],
 		distil:[73.85, 85.44, 88.72, 91.18, 69.33],
 	},
