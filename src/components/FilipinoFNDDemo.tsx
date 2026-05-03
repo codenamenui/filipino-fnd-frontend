@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import PerformanceChart from "@/components/PerformanceChart";
+import SubclassChart from "@/components/SubclassChart";
+
+import React, { useState, useEffect } from "react";
 import {
 	AlertCircle,
 	CheckCircle,
 	XCircle,
-	BarChart3,
 	FileText,
-	TrendingUp,
 	Loader2,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -23,13 +24,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -38,9 +32,19 @@ const FilipinoFNDDemo = () => {
 	const [inputText, setInputText] = useState("");
 	const [isClassifying, setIsClassifying] = useState(false);
 	const [results, setResults] = useState(null);
-	const [selectedArchitecture, setSelectedArchitecture] = useState("");
-	const [selectedCondition, setSelectedCondition] = useState("");
-	const [selectedRatio, setSelectedRatio] = useState("");
+	const [metricsData, setMetricsData] = useState<Record<string, { accuracy: string; f1Score: string }>>({});
+
+	// Checkbox states
+	const [checkedArchitectures, setCheckedArchitectures] = useState<string[]>([]);
+	const [checkedConditions, setCheckedConditions] = useState<string[]>([]);
+	const [checkedRatios, setCheckedRatios] = useState<string[]>([]);
+
+	useEffect(() => {
+		fetch('/metrics.json')
+			.then(res => res.json())
+			.then(data => setMetricsData(data))
+			.catch(err => console.error('Failed to load metrics:', err));
+	}, []);
 
 	const architectures = ["Tagalog-BERT", "Tagalog-DistilBERT"];
 	const conditions = [
@@ -64,14 +68,18 @@ const FilipinoFNDDemo = () => {
 
 	const models = architectures.flatMap((arch) =>
 		conditions.flatMap((cond) =>
-			ratios.map((ratio) => ({
-				id: `${arch}-${cond.id}-${ratio}`,
-				architecture: arch,
-				condition: cond.name,
-				ratio: ratio,
-				accuracy: "XXX",
-				f1Score: "XXX",
-			})),
+			ratios.map((ratio) => {
+				const id = `${arch}-${cond.id}-${ratio}`;
+				const m = metricsData[id] ?? { accuracy: "N/A", f1Score: "N/A" };
+				return {
+					id,
+					architecture: arch,
+					condition: cond.name,
+					ratio: ratio,
+					accuracy: m.accuracy,
+					f1Score: m.f1Score,
+				};
+			}),
 		),
 	);
 
@@ -82,16 +90,26 @@ const FilipinoFNDDemo = () => {
 		"AI-F": "Naglabas ng official statement ang WHO na ang bagong variant ng virus ay may 90% fatality rate sa Pilipinas. Government sources confirm na may lockdown protocols na ipinatutupad nationwide effective immediately. Medical experts warn na ang healthcare system ay malapit nang mag-collapse. Thousands of cases reported daily according to DOH data.",
 	};
 
-	const handleAddModel = () => {
-		if (selectedArchitecture && selectedCondition && selectedRatio) {
-			const modelId = `${selectedArchitecture}-${selectedCondition}-${selectedRatio}`;
-			if (!selectedModels.includes(modelId)) {
-				setSelectedModels((prev) => [...prev, modelId]);
-			}
-			setSelectedArchitecture("");
-			setSelectedCondition("");
-			setSelectedRatio("");
-		}
+	const toggleItem = (item: string, list: string[], setList: (v: string[]) => void) => {
+		setList(list.includes(item) ? list.filter(i => i !== item) : [...list, item]);
+	};
+
+	const handleApplySelection = () => {
+		if (checkedArchitectures.length === 0 || checkedConditions.length === 0 || checkedRatios.length === 0) return;
+		const newIds: string[] = [];
+		checkedArchitectures.forEach(arch => {
+			checkedConditions.forEach(condId => {
+				checkedRatios.forEach(ratio => {
+					const id = `${arch}-${condId}-${ratio}`;
+					if (!newIds.includes(id)) newIds.push(id);
+				});
+			});
+		});
+		setSelectedModels(prev => {
+			const merged = [...prev];
+			newIds.forEach(id => { if (!merged.includes(id)) merged.push(id); });
+			return merged;
+		});
 	};
 
 	const handleRemoveModel = (modelId) => {
@@ -120,7 +138,6 @@ const FilipinoFNDDemo = () => {
 
 			const data = await response.json();
 
-			// Transform the flat backend response to match the UI’s expected shape
 			if (data.results) {
 				const enriched = data.results.map((r) => ({
 					...r,
@@ -136,7 +153,6 @@ const FilipinoFNDDemo = () => {
 			}
 		} catch (error) {
 			console.error("Classification failed:", error);
-			// Optional: show alert
 		} finally {
 			setIsClassifying(false);
 		}
@@ -240,8 +256,7 @@ const FilipinoFNDDemo = () => {
 														? "bg-red-600 hover:bg-red-700"
 														: "bg-green-600 hover:bg-green-700"
 												}`}>
-												{result.prediction ===
-												"FAKE" ? (
+												{result.prediction === "FAKE" ? (
 													<XCircle className="w-3 h-3 mr-1" />
 												) : (
 													<CheckCircle className="w-3 h-3 mr-1" />
@@ -322,33 +337,25 @@ const FilipinoFNDDemo = () => {
 										</p>
 										<div className="flex flex-wrap gap-2">
 											<Button
-												onClick={() =>
-													handleLoadSample("HR")
-												}
+												onClick={() => handleLoadSample("HR")}
 												variant="outline"
 												size="sm">
 												Human Real
 											</Button>
 											<Button
-												onClick={() =>
-													handleLoadSample("AI-R")
-												}
+												onClick={() => handleLoadSample("AI-R")}
 												variant="outline"
 												size="sm">
 												AI-Enhanced Real
 											</Button>
 											<Button
-												onClick={() =>
-													handleLoadSample("HF")
-												}
+												onClick={() => handleLoadSample("HF")}
 												variant="outline"
 												size="sm">
 												Human Fake
 											</Button>
 											<Button
-												onClick={() =>
-													handleLoadSample("AI-F")
-												}
+												onClick={() => handleLoadSample("AI-F")}
 												variant="outline"
 												size="sm">
 												AI-Generated Fake
@@ -358,9 +365,7 @@ const FilipinoFNDDemo = () => {
 
 									<Textarea
 										value={inputText}
-										onChange={(e) =>
-											setInputText(e.target.value)
-										}
+										onChange={(e) => setInputText(e.target.value)}
 										placeholder="Ilagay dito ang balita sa Filipino..."
 										className="min-h-48 resize-none"
 									/>
@@ -378,8 +383,7 @@ const FilipinoFNDDemo = () => {
 											<Button
 												onClick={handleClassify}
 												disabled={
-													selectedModels.length ===
-														0 ||
+													selectedModels.length === 0 ||
 													!inputText.trim() ||
 													isClassifying
 												}
@@ -387,9 +391,7 @@ const FilipinoFNDDemo = () => {
 												{isClassifying && (
 													<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 												)}
-												{isClassifying
-													? "Classifying..."
-													: "Classify"}
+												{isClassifying ? "Classifying..." : "Classify"}
 											</Button>
 										</div>
 									</div>
@@ -403,169 +405,132 @@ const FilipinoFNDDemo = () => {
 									<div>
 										<CardTitle>Select Models</CardTitle>
 										<CardDescription>
-											Choose one or more models to
-											classify the article
+											Choose architectures, conditions, and ratios then click Apply
 										</CardDescription>
 									</div>
-									<div className="space-x-2">
-										<Button
-											onClick={() =>
-												setSelectedModels(
-													models.map((m) => m.id),
-												)
-											}
-											variant="outline"
-											size="sm">
-											Select All
-										</Button>
-										<Button
-											onClick={() =>
-												setSelectedModels([])
-											}
-											variant="outline"
-											size="sm">
-											Clear All
-										</Button>
-									</div>
+									<Button
+										onClick={() => setSelectedModels([])}
+										variant="outline"
+										size="sm">
+										Clear All
+									</Button>
 								</div>
 							</CardHeader>
 							<CardContent>
 								<div className="space-y-6">
-									<div className="border rounded-lg p-4 bg-gray-50">
-										<p className="text-sm font-medium text-gray-700 mb-3">
-											Add Model to Selection
-										</p>
-										<div className="flex flex-col gap-3">
-											<Select
-												value={selectedArchitecture}
-												onValueChange={
-													setSelectedArchitecture
-												}>
-												<SelectTrigger className="w-full">
-													<SelectValue placeholder="Select Architecture" />
-												</SelectTrigger>
-												<SelectContent position="popper" side="bottom" avoidCollisions={false}>
-													{architectures.map(
-														(arch) => (
-															<SelectItem
-																key={arch}
-																value={arch}>
-																{arch}
-															</SelectItem>
-														),
-													)}
-												</SelectContent>
-											</Select>
+									<div className="border rounded-lg p-4 bg-gray-50 space-y-4">
 
-											<Select
-												value={selectedCondition}
-												onValueChange={
-													setSelectedCondition
-												}>
-												<SelectTrigger className="w-full">
-													<SelectValue placeholder="Select Condition" />
-												</SelectTrigger>
-												<SelectContent position="popper" side="bottom" avoidCollisions={false}>
-													{conditions.map((cond) => (
-														<SelectItem
-															key={cond.id}
-															value={cond.id}>
-															{cond.name}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
+										{/* Architecture */}
+										<div>
+											<p className="text-sm font-medium text-gray-700 mb-2">Architecture</p>
+											<div className="flex flex-col gap-2">
+												{architectures.map(arch => (
+													<label key={arch} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+														<input
+															type="checkbox"
+															checked={checkedArchitectures.includes(arch)}
+															onChange={() => toggleItem(arch, checkedArchitectures, setCheckedArchitectures)}
+															className="accent-green-600 w-4 h-4"
+														/>
+														{arch}
+													</label>
+												))}
+											</div>
+										</div>
 
-											<Select
-												value={selectedRatio}
-												onValueChange={
-													setSelectedRatio
-												}>
-												<SelectTrigger className="w-full">
-													<SelectValue placeholder="Select Ratio" />
-												</SelectTrigger>
-												<SelectContent position="popper" side="bottom" avoidCollisions={false}>
-													{ratios.map((ratio) => (
-														<SelectItem
-															key={ratio}
-															value={ratio}>
-															{ratio} (HF:AI-F)
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
+										<div className="border-t border-gray-200" />
 
+										{/* Condition */}
+										<div>
+											<p className="text-sm font-medium text-gray-700 mb-2">Condition</p>
+											<div className="flex flex-col gap-2">
+												{conditions.map(cond => (
+													<label key={cond.id} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+														<input
+															type="checkbox"
+															checked={checkedConditions.includes(cond.id)}
+															onChange={() => toggleItem(cond.id, checkedConditions, setCheckedConditions)}
+															className="accent-green-600 w-4 h-4"
+														/>
+														{cond.name}
+													</label>
+												))}
+											</div>
+										</div>
+
+										<div className="border-t border-gray-200" />
+
+										{/* Ratio */}
+										<div>
+											<p className="text-sm font-medium text-gray-700 mb-2">HF:AI-F Ratio</p>
+											<div className="flex flex-col gap-2">
+												{ratios.map(ratio => (
+													<label key={ratio} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+														<input
+															type="checkbox"
+															checked={checkedRatios.includes(ratio)}
+															onChange={() => toggleItem(ratio, checkedRatios, setCheckedRatios)}
+															className="accent-green-600 w-4 h-4"
+														/>
+														{ratio} (HF:AI-F)
+													</label>
+												))}
+											</div>
+										</div>
+
+										<div className="border-t border-gray-200" />
+
+										{/* Apply */}
+										<div className="flex items-center justify-between">
+											<p className="text-xs text-gray-500">
+												{checkedArchitectures.length} arch × {checkedConditions.length} cond × {checkedRatios.length} ratio = {checkedArchitectures.length * checkedConditions.length * checkedRatios.length} model(s)
+											</p>
 											<Button
-												onClick={handleAddModel}
+												onClick={handleApplySelection}
 												disabled={
-													!selectedArchitecture ||
-													!selectedCondition ||
-													!selectedRatio
+													checkedArchitectures.length === 0 ||
+													checkedConditions.length === 0 ||
+													checkedRatios.length === 0
 												}
 												className="bg-green-600 hover:bg-green-700">
-												Add Model
+												Apply Selection
 											</Button>
 										</div>
 									</div>
 
+									{/* Selected Models List */}
 									{selectedModels.length > 0 && (
 										<div className="border rounded-lg p-4">
 											<p className="text-sm font-medium text-gray-700 mb-3">
-												Selected Models (
-												{selectedModels.length})
+												Selected Models ({selectedModels.length})
 											</p>
 											<div className="space-y-2">
-												{selectedModels.map(
-													(modelId) => {
-														const model =
-															models.find(
-																(m) =>
-																	m.id ===
-																	modelId,
-															);
-														const condition =
-															conditions.find(
-																(c) =>
-																	model.condition.includes(
-																		c.id,
-																	),
-															);
-														return (
-															<div
-																key={modelId}
-																className="flex items-center justify-between bg-gray-50 p-3 rounded">
-																<div className="flex-1">
-																	<p className="text-sm font-medium text-gray-900">
-																		{
-																			model.architecture
-																		}
-																	</p>
-																	<p className="text-xs text-gray-600">
-																		{
-																			condition?.description
-																		}{" "}
-																		| Ratio:{" "}
-																		{
-																			model.ratio
-																		}{" "}
-																		(HF:AI-F)
-																	</p>
-																</div>
-																<Button
-																	onClick={() =>
-																		handleRemoveModel(
-																			modelId,
-																		)
-																	}
-																	variant="ghost"
-																	size="sm"
-																	className="text-red-600 hover:text-red-700 hover:bg-red-50">
-																	Remove
-																</Button>
+												{selectedModels.map((modelId) => {
+													const model = models.find((m) => m.id === modelId);
+													const condition = conditions.find((c) => model.condition.includes(c.id));
+													return (
+														<div
+															key={modelId}
+															className="flex items-center justify-between bg-gray-50 p-3 rounded">
+															<div className="flex-1">
+																<p className="text-sm font-medium text-gray-900">
+																	{model.architecture}
+																</p>
+																<p className="text-xs text-gray-600">
+																	{condition?.description} | Ratio:{" "}
+																	{model.ratio} (HF:AI-F)
+																</p>
 															</div>
-														);
-													},
-												)}
+															<Button
+																onClick={() => handleRemoveModel(modelId)}
+																variant="ghost"
+																size="sm"
+																className="text-red-600 hover:text-red-700 hover:bg-red-50">
+																Remove
+															</Button>
+														</div>
+													);
+												})}
 											</div>
 										</div>
 									)}
@@ -641,25 +606,14 @@ const FilipinoFNDDemo = () => {
 										Configurations
 									</CardTitle>
 									<CardDescription>
-										Accuracy, and F1-score trends across
-										three AI-adoption conditions (A:
-										Human-Only, B: Moderate [67:33], C:
-										Balanced [50:50]) and five HF:AI-F
-										ratios (100:0 to 0:100)
+										Accuracy trends across three AI-adoption
+										conditions (A: Human-Only, B: Moderate [67:33],
+										C: Balanced [50:50]) and five HF:AI-F ratios
+										(100:0 to 0:100)
 									</CardDescription>
 								</CardHeader>
 								<CardContent>
-									<div className="bg-gray-50 rounded-lg p-12 text-center border-2 border-dashed border-gray-300">
-										<BarChart3 className="w-16 h-16 mx-auto text-gray-400 mb-3" />
-										<p className="text-gray-600 font-medium">
-											Interactive Performance Charts
-										</p>
-										<p className="text-sm text-gray-500 mt-2">
-											Visualization will display
-											comparative analysis across all
-											training configurations
-										</p>
-									</div>
+									<PerformanceChart />
 								</CardContent>
 							</Card>
 
@@ -674,17 +628,7 @@ const FilipinoFNDDemo = () => {
 									</CardDescription>
 								</CardHeader>
 								<CardContent>
-									<div className="bg-gray-50 rounded-lg p-12 text-center border-2 border-dashed border-gray-300">
-										<TrendingUp className="w-16 h-16 mx-auto text-gray-400 mb-3" />
-										<p className="text-gray-600 font-medium">
-											Heatmap Visualization
-										</p>
-										<p className="text-sm text-gray-500 mt-2">
-											Detailed accuracy metrics for each
-											content type across model
-											configurations
-										</p>
-									</div>
+									<SubclassChart />
 								</CardContent>
 							</Card>
 
@@ -695,39 +639,19 @@ const FilipinoFNDDemo = () => {
 								<CardContent>
 									<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 										<div className="border-2 rounded-lg p-6 text-center hover:border-green-600 transition-colors">
-											<div className="text-3xl font-bold text-green-600 mb-2">
-												30
-											</div>
-											<div className="text-sm font-medium text-gray-900">
-												Models Trained
-											</div>
-											<div className="text-xs text-gray-600 mt-1">
-												2 architectures × 3 conditions ×
-												5 ratios
-											</div>
+											<div className="text-3xl font-bold text-green-600 mb-2">30</div>
+											<div className="text-sm font-medium text-gray-900">Models Trained</div>
+											<div className="text-xs text-gray-600 mt-1">2 architectures × 3 conditions × 5 ratios</div>
 										</div>
 										<div className="border-2 rounded-lg p-6 text-center hover:border-green-600 transition-colors">
-											<div className="text-3xl font-bold text-green-600 mb-2">
-												4,332
-											</div>
-											<div className="text-sm font-medium text-gray-900">
-												Total Dataset Size
-											</div>
-											<div className="text-xs text-gray-600 mt-1">
-												2,166 human + 2,166 AI-generated
-												articles
-											</div>
+											<div className="text-3xl font-bold text-green-600 mb-2">4,332</div>
+											<div className="text-sm font-medium text-gray-900">Total Dataset Size</div>
+											<div className="text-xs text-gray-600 mt-1">2,166 human + 2,166 AI-generated articles</div>
 										</div>
 										<div className="border-2 rounded-lg p-6 text-center hover:border-green-600 transition-colors">
-											<div className="text-3xl font-bold text-green-600 mb-2">
-												4
-											</div>
-											<div className="text-sm font-medium text-gray-900">
-												Content Types
-											</div>
-											<div className="text-xs text-gray-600 mt-1">
-												HR, AI-R, HF, AI-F
-											</div>
+											<div className="text-3xl font-bold text-green-600 mb-2">4</div>
+											<div className="text-sm font-medium text-gray-900">Content Types</div>
+											<div className="text-xs text-gray-600 mt-1">HR, AI-R, HF, AI-F</div>
 										</div>
 									</div>
 								</CardContent>

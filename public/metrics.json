@@ -1,0 +1,37 @@
+{
+  "Tagalog-BERT-A-100:0":        { "accuracy": "74.97%", "f1Score": "72.15%" },
+  "Tagalog-BERT-A-67:33":        { "accuracy": "85.44%", "f1Score": "85.54%" },
+  "Tagalog-BERT-A-50:50":        { "accuracy": "84.62%", "f1Score": "84.11%" },
+  "Tagalog-BERT-A-33:67":        { "accuracy": "83.18%", "f1Score": "82.40%" },
+  "Tagalog-BERT-A-0:100":        { "accuracy": "72.10%", "f1Score": "66.34%" },
+
+  "Tagalog-DistilBERT-A-100:0":  { "accuracy": "76.82%", "f1Score": "77.89%" },
+  "Tagalog-DistilBERT-A-67:33":  { "accuracy": "84.31%", "f1Score": "84.99%" },
+  "Tagalog-DistilBERT-A-50:50":  { "accuracy": "79.64%", "f1Score": "80.79%" },
+  "Tagalog-DistilBERT-A-33:67":  { "accuracy": "77.95%", "f1Score": "78.30%" },
+  "Tagalog-DistilBERT-A-0:100":  { "accuracy": "75.28%", "f1Score": "71.21%" },
+
+  "Tagalog-BERT-B-100:0":        { "accuracy": "69.64%", "f1Score": "62.81%" },
+  "Tagalog-BERT-B-67:33":        { "accuracy": "92.62%", "f1Score": "92.39%" },
+  "Tagalog-BERT-B-50:50":        { "accuracy": "90.67%", "f1Score": "90.51%" },
+  "Tagalog-BERT-B-33:67":        { "accuracy": "91.18%", "f1Score": "90.71%" },
+  "Tagalog-BERT-B-0:100":        { "accuracy": "73.33%", "f1Score": "64.96%" },
+
+  "Tagalog-DistilBERT-B-100:0":  { "accuracy": "64.92%", "f1Score": "55.00%" },
+  "Tagalog-DistilBERT-B-67:33":  { "accuracy": "89.54%", "f1Score": "89.31%" },
+  "Tagalog-DistilBERT-B-50:50":  { "accuracy": "89.33%", "f1Score": "89.08%" },
+  "Tagalog-DistilBERT-B-33:67":  { "accuracy": "87.90%", "f1Score": "87.71%" },
+  "Tagalog-DistilBERT-B-0:100":  { "accuracy": "73.64%", "f1Score": "66.67%" },
+
+  "Tagalog-BERT-C-100:0":        { "accuracy": "65.54%", "f1Score": "53.07%" },
+  "Tagalog-BERT-C-67:33":        { "accuracy": "91.79%", "f1Score": "91.42%" },
+  "Tagalog-BERT-C-50:50":        { "accuracy": "90.56%", "f1Score": "90.34%" },
+  "Tagalog-BERT-C-33:67":        { "accuracy": "88.62%", "f1Score": "87.49%" },
+  "Tagalog-BERT-C-0:100":        { "accuracy": "74.36%", "f1Score": "65.56%" },
+
+  "Tagalog-DistilBERT-C-100:0":  { "accuracy": "69.33%", "f1Score": "59.54%" },
+  "Tagalog-DistilBERT-C-67:33":  { "accuracy": "91.18%", "f1Score": "91.00%" },
+  "Tagalog-DistilBERT-C-50:50":  { "accuracy": "88.72%", "f1Score": "88.59%" },
+  "Tagalog-DistilBERT-C-33:67":  { "accuracy": "85.44%", "f1Score": "84.19%" },
+  "Tagalog-DistilBERT-C-0:100":  { "accuracy": "73.85%", "f1Score": "66.67%" }
+}
