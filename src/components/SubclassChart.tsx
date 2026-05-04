@@ -16,7 +16,7 @@ const ratioLabels = ["100:0", "67:33", "50:50", "33:67", "0:100"];
 
 const subclassData = {
 	A: {
-		label: "Condition A:Human-Only Real News (100% HR)",
+		label: "Condition A: Human-Only Real News (100% HR)",
 		bert: {
 			HR:  [94.31, 99.19, 99.18, 98.77, 98.77],
 			AIR: [75.31, 69.55, 76.34, 76.95, 80.25],
