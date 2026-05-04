@@ -51,7 +51,7 @@ const FilipinoFNDDemo = () => {
 		{
 			id: "A",
 			name: "Condition A: Human-Only Real News (100% HR)",
-			description: "100% Human-Written Real News",
+			description: "100% HR",
 		},
 		{
 			id: "B",
@@ -75,6 +75,8 @@ const FilipinoFNDDemo = () => {
 					id,
 					architecture: arch,
 					condition: cond.name,
+					conditionId: cond.id,
+          conditionDescription: cond.description,
 					ratio: ratio,
 					accuracy: m.accuracy,
 					f1Score: m.f1Score,
@@ -507,7 +509,6 @@ const FilipinoFNDDemo = () => {
 											<div className="space-y-2">
 												{selectedModels.map((modelId) => {
 													const model = models.find((m) => m.id === modelId);
-													const condition = conditions.find((c) => model.condition.includes(c.id));
 													return (
 														<div
 															key={modelId}
@@ -517,7 +518,7 @@ const FilipinoFNDDemo = () => {
 																	{model.architecture}
 																</p>
 																<p className="text-xs text-gray-600">
-																	{condition?.description} | Ratio:{" "}
+																	{model?.conditionDescription} | Ratio:{" "}
 																	{model.ratio} (HF:AI-F)
 																</p>
 															</div>
