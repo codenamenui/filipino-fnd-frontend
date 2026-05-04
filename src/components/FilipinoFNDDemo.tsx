@@ -141,16 +141,19 @@ const FilipinoFNDDemo = () => {
 			const data = await response.json();
 
 			if (data.results) {
-				const enriched = data.results.map((r) => ({
-					...r,
-					model: {
-						architecture: r.architecture,
-						condition: r.condition,
-						ratio: r.ratio,
-						accuracy: r.accuracy,
-						f1Score: r.f1Score,
-					},
-				}));
+				const enriched = data.results.map((r) => {
+					const m = metricsData[r.model_id] ?? { accuracy: "N/A", f1Score: "N/A" };
+					return {
+							...r,
+							model: {
+									architecture: r.architecture,
+									condition: r.condition,
+									ratio: r.ratio,
+									accuracy: m.accuracy,
+									f1Score: m.f1Score,
+							},
+					};
+				});
 				setResults(enriched);
 			}
 		} catch (error) {
@@ -236,15 +239,7 @@ const FilipinoFNDDemo = () => {
 												{result.model.architecture}
 											</div>
 											<div className="text-sm text-gray-600">
-												{result.model.condition.includes(
-													"67:33",
-												)
-													? "Moderate AI-Augmented (67% HR, 33% AI-R)"
-													: result.model.condition.includes(
-																"50:50",
-														  )
-														? "Balanced AI-Augmented (50% HR, 50% AI-R)"
-														: "Human-Only Real News (100% HR)"}
+												{result.model.condition}
 											</div>
 											<div className="text-sm text-gray-600">
 												Ratio: {result.model.ratio}{" "}
