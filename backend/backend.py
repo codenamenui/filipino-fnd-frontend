@@ -13,7 +13,7 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 # ---------- Configuration ----------
 MODELS_DIR = Path(os.getenv("MODELS_DIR", "C:\\Users\\redpl\\models"))
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-CACHE_SIZE = 5
+CACHE_SIZE = 8
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("fnd-backend")
