@@ -11,9 +11,9 @@ from pydantic import BaseModel, Field
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 # ---------- Configuration ----------
-MODELS_DIR = Path(os.getenv("MODELS_DIR", "C:\\Users\\redpl\\models"))
+MODELS_DIR = Path(os.getenv("MODELS_DIR", "C:\\Users\\christian faller\\Desktop\\models"))
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-CACHE_SIZE = 8
+CACHE_SIZE = 30
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("fnd-backend")
@@ -177,7 +177,13 @@ async def classify(request: ClassificationRequest):
                 padding=True,
                 max_length=512,
                 return_tensors="pt"
-            ).to(DEVICE)
+            )
+            # Move to device
+            inputs = {k: v.to(DEVICE) for k, v in inputs.items()}
+            
+            # Remove token_type_ids for DistilBERT models
+            if "distilbert" in model_id.lower() and "token_type_ids" in inputs:
+                del inputs["token_type_ids"]
 
             with torch.no_grad():
                 outputs = model(**inputs)
